@@ -339,6 +339,20 @@
   .send-btn:active { transform: scale(.98); }
   .send-btn:disabled { opacity: .4; cursor: not-allowed; }
 
+  .reset-table-btn {
+    padding: 8px 14px;
+    background: rgba(192,57,43,.1);
+    color: #c0392b;
+    border: 1px solid rgba(192,57,43,.3);
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: background .2s;
+  }
+  .reset-table-btn:hover { background: rgba(192,57,43,.18); }
+
   /* sent orders list inside table view */
   .sent-orders { margin-top: 24px; }
   .sent-order {
@@ -697,6 +711,9 @@
     <button class="back-btn" onclick="showWaiterHome()">← Alle bord</button>
     <div class="order-head">
       <h2 id="order-table-title">Bord</h2>
+      <button class="reset-table-btn" id="reset-table-btn" onclick="resetTable()" style="display:none;">
+        ↺ Nullstill bord
+      </button>
     </div>
 
     <div id="menu-render"></div>
@@ -885,6 +902,12 @@ async function fbUpdateOrder(restKey, order) {
   if (!fbReady) return false;
   const { ref, set } = window._fbMod;
   await set(ref(fbDb, `orders/${restKey}/${order.id}`), order);
+  return true;
+}
+async function fbDeleteOrder(restKey, orderId) {
+  if (!fbReady) return false;
+  const { ref, remove } = window._fbMod;
+  await remove(ref(fbDb, `orders/${restKey}/${orderId}`));
   return true;
 }
 
@@ -1097,9 +1120,37 @@ window.sendOrder = async function() {
   toast('Bestilling sendt!');
 };
 
+window.resetTable = async function() {
+  const list = (orders[currentRestaurant] || []).filter(o => o.table === currentTable);
+  if (list.length === 0) return;
+  const total = list.reduce((s, o) => s + o.items.reduce((a, it) => a + it.qty, 0), 0);
+  const confirmed = confirm(
+    `Nullstille bord ${currentTable}?\n\n` +
+    `Dette sletter ${list.length} ${list.length === 1 ? 'bestilling' : 'bestillinger'} ` +
+    `(${total} ${total === 1 ? 'rett' : 'retter'} totalt) og gjør bordet klart for nye kunder.\n\n` +
+    `Handlingen kan ikke angres.`
+  );
+  if (!confirmed) return;
+
+  if (fbReady) {
+    // Slett hver ordre fra Firebase
+    await Promise.all(list.map(o => fbDeleteOrder(currentRestaurant, o.id)));
+    // Lokal state oppdateres når Firebase-listeneren fyrer
+  } else {
+    orders[currentRestaurant] = orders[currentRestaurant].filter(o => o.table !== currentTable);
+    saveOrdersLocal();
+  }
+  cart = {};
+  renderMenu();
+  renderSentOrders();
+  toast(`Bord ${currentTable} er nullstilt`);
+};
+
 function renderSentOrders() {
   const wrap = document.getElementById('sent-orders');
+  const resetBtn = document.getElementById('reset-table-btn');
   const list = (orders[currentRestaurant] || []).filter(o => o.table === currentTable);
+  if (resetBtn) resetBtn.style.display = list.length > 0 ? 'inline-flex' : 'none';
   if (list.length === 0) { wrap.innerHTML = ''; return; }
   let html = `<h3 style="margin: 24px 0 12px; font-family: 'Playfair Display', serif; font-size: 20px; color: #2a2520;">Sendte bestillinger</h3>`;
   for (const o of list) {
