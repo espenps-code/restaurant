@@ -10,8 +10,8 @@
   html, body { height: 100%; overflow-x: hidden; }
   body {
     font-family: 'Lora', serif;
-    background: #1a1a1a;
-    color: #fff;
+    background: #f5f1ea;
+    color: #2a2520;
     min-height: 100vh;
     -webkit-tap-highlight-color: transparent;
   }
@@ -23,14 +23,14 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background: linear-gradient(135deg, #2a1a0a 0%, #1a1a1a 50%, #0a1a1a 100%);
+    background: linear-gradient(135deg, #faf6ee 0%, #f0e6d2 50%, #f5dcc4 100%);
     position: relative;
   }
   #splash::before {
     content: '';
     position: absolute; inset: 0;
-    background-image: radial-gradient(circle at 20% 30%, rgba(255,200,100,.08), transparent 40%),
-                      radial-gradient(circle at 80% 70%, rgba(255,100,100,.08), transparent 40%);
+    background-image: radial-gradient(circle at 20% 30%, rgba(230,126,34,.12), transparent 40%),
+                      radial-gradient(circle at 80% 70%, rgba(192,57,43,.10), transparent 40%);
     pointer-events: none;
   }
   .splash-header {
@@ -51,7 +51,7 @@
   }
   .splash-sub {
     font-style: italic;
-    color: #aaa;
+    color: #8a7a65;
     margin-top: 8px;
     font-size: 18px;
   }
@@ -146,13 +146,13 @@
   .splash-footer {
     text-align: center;
     padding: 20px;
-    color: #555;
+    color: #a0907a;
     font-size: 13px;
     position: relative;
     z-index: 1;
   }
   .splash-footer button {
-    color: #888;
+    color: #6b5a45;
     text-decoration: underline;
     font-size: 13px;
   }
@@ -164,16 +164,18 @@
     align-items: center;
     justify-content: space-between;
     padding: 14px 20px;
-    background: #0d0d0d;
-    border-bottom: 2px solid rgba(255,255,255,.08);
+    background: #fffaf0;
+    border-bottom: 2px solid rgba(0,0,0,.08);
     gap: 12px;
     flex-wrap: wrap;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
   }
   .app-bar .left { display: flex; align-items: center; gap: 14px; }
   .app-bar .rest-name {
     font-family: 'Playfair Display', serif;
     font-size: 22px;
     font-weight: 700;
+    color: #2a2520;
   }
   .app-bar .role {
     text-transform: uppercase;
@@ -181,17 +183,19 @@
     letter-spacing: 2px;
     padding: 4px 10px;
     border-radius: 4px;
-    background: rgba(255,255,255,.1);
+    background: rgba(0,0,0,.08);
+    color: #6b5a45;
   }
   .icon-btn {
     width: 38px; height: 38px;
     border-radius: 8px;
-    background: rgba(255,255,255,.08);
+    background: rgba(0,0,0,.06);
+    color: #2a2520;
     display: inline-flex; align-items: center; justify-content: center;
     font-size: 18px;
     transition: background .2s;
   }
-  .icon-btn:hover { background: rgba(255,255,255,.15); }
+  .icon-btn:hover { background: rgba(0,0,0,.12); }
   .conn-dot {
     width: 10px; height: 10px;
     border-radius: 50%;
@@ -213,8 +217,8 @@
   .table-card {
     aspect-ratio: 1;
     border-radius: 14px;
-    background: rgba(255,255,255,.04);
-    border: 2px solid rgba(255,255,255,.1);
+    background: #fffaf0;
+    border: 2px solid rgba(0,0,0,.08);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -223,18 +227,19 @@
     transition: all .2s;
     position: relative;
     overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0,0,0,.04);
   }
-  .table-card:hover { transform: scale(1.03); border-color: rgba(255,255,255,.3); }
+  .table-card:hover { transform: scale(1.03); border-color: rgba(0,0,0,.2); box-shadow: 0 6px 16px rgba(0,0,0,.08); }
   .table-card.has-orders {
-    background: linear-gradient(135deg, rgba(46,204,113,.15), rgba(46,204,113,.05));
-    border-color: rgba(46,204,113,.5);
+    background: linear-gradient(135deg, #d4f5dc, #e8faec);
+    border-color: rgba(39,174,96,.5);
   }
   .table-card.all-served {
-    background: linear-gradient(135deg, rgba(155,89,182,.15), rgba(155,89,182,.05));
+    background: linear-gradient(135deg, #ecdaf5, #f5ebfa);
     border-color: rgba(155,89,182,.5);
   }
-  .table-num { font-family: 'Playfair Display', serif; font-size: 42px; font-weight: 900; }
-  .table-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 2px; }
+  .table-num { font-family: 'Playfair Display', serif; font-size: 42px; font-weight: 900; color: #2a2520; }
+  .table-label { font-size: 11px; color: #8a7a65; text-transform: uppercase; letter-spacing: 2px; }
   .table-badge {
     position: absolute;
     top: 8px; right: 8px;
@@ -251,28 +256,28 @@
   #order-view { padding: 24px; max-width: 900px; margin: 0 auto; width: 100%; }
   .back-btn {
     margin-bottom: 16px;
-    color: #aaa;
+    color: #6b5a45;
     font-size: 14px;
     display: inline-flex;
     align-items: center;
     gap: 6px;
   }
-  .back-btn:hover { color: #fff; }
+  .back-btn:hover { color: #2a2520; }
   .order-head {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
     margin-bottom: 24px;
     padding-bottom: 16px;
-    border-bottom: 1px solid rgba(255,255,255,.1);
+    border-bottom: 1px solid rgba(0,0,0,.1);
   }
-  .order-head h2 { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 900; }
+  .order-head h2 { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 900; color: #2a2520; }
   .menu-section { margin-bottom: 24px; }
   .menu-section h3 {
     font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 3px;
-    color: #888;
+    color: #8a7a65;
     margin-bottom: 12px;
     font-weight: 700;
   }
@@ -281,45 +286,49 @@
     align-items: center;
     justify-content: space-between;
     padding: 14px 18px;
-    background: rgba(255,255,255,.04);
-    border: 1px solid rgba(255,255,255,.08);
+    background: #fffaf0;
+    border: 1px solid rgba(0,0,0,.08);
     border-radius: 10px;
     margin-bottom: 8px;
     gap: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04);
   }
-  .menu-item .name { font-size: 17px; flex: 1; }
+  .menu-item .name { font-size: 17px; flex: 1; color: #2a2520; }
   .qty-ctrl {
     display: flex;
     align-items: center;
     gap: 10px;
-    background: rgba(0,0,0,.4);
+    background: rgba(0,0,0,.06);
     border-radius: 8px;
     padding: 4px;
   }
   .qty-ctrl button {
     width: 32px; height: 32px;
     border-radius: 6px;
-    background: rgba(255,255,255,.08);
+    background: rgba(255,255,255,.9);
+    color: #2a2520;
     font-size: 18px;
     font-weight: 700;
     transition: background .15s;
+    box-shadow: 0 1px 2px rgba(0,0,0,.08);
   }
-  .qty-ctrl button:hover { background: rgba(255,255,255,.15); }
+  .qty-ctrl button:hover { background: #fff; }
   .qty-ctrl button:active { transform: scale(.95); }
-  .qty-ctrl .qty { min-width: 24px; text-align: center; font-weight: 700; }
+  .qty-ctrl .qty { min-width: 24px; text-align: center; font-weight: 700; color: #2a2520; }
 
   .send-bar {
     position: sticky;
     bottom: 0;
     margin: 24px -24px 0;
     padding: 16px 24px;
-    background: linear-gradient(180deg, transparent, #1a1a1a 30%);
+    background: linear-gradient(180deg, transparent, #f5f1ea 30%);
   }
   .send-btn {
     width: 100%;
     padding: 16px;
     border-radius: 12px;
     background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: #fff;
     font-weight: 700;
     font-size: 16px;
     text-transform: uppercase;
@@ -333,15 +342,16 @@
   /* sent orders list inside table view */
   .sent-orders { margin-top: 24px; }
   .sent-order {
-    background: rgba(255,255,255,.04);
-    border: 1px solid rgba(255,255,255,.08);
+    background: #fffaf0;
+    border: 1px solid rgba(0,0,0,.08);
     border-radius: 10px;
     padding: 14px 16px;
     margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04);
   }
   .sent-order .meta {
     font-size: 11px;
-    color: #888;
+    color: #8a7a65;
     text-transform: uppercase;
     letter-spacing: 1.5px;
     margin-bottom: 8px;
@@ -353,9 +363,10 @@
     padding: 4px 0;
     display: flex;
     justify-content: space-between;
+    color: #2a2520;
   }
-  .sent-order li.served { color: #888; text-decoration: line-through; }
-  .sent-order .served-tag { color: #2ecc71; font-size: 12px; }
+  .sent-order li.served { color: #a8a095; text-decoration: line-through; }
+  .sent-order .served-tag { color: #27ae60; font-size: 12px; font-weight: 700; }
 
   /* ============ KITCHEN VIEW ============ */
   #kitchen-view { padding: 24px; }
@@ -371,7 +382,7 @@
     color: #2a2a2a;
     border-radius: 4px;
     padding: 18px;
-    box-shadow: 0 8px 24px rgba(0,0,0,.4);
+    box-shadow: 0 4px 16px rgba(0,0,0,.12), 0 1px 3px rgba(0,0,0,.08);
     font-family: 'Lora', serif;
     position: relative;
     border-top: 6px solid #c0392b;
@@ -430,7 +441,7 @@
   .empty-kitchen {
     text-align: center;
     padding: 80px 20px;
-    color: #666;
+    color: #a0907a;
     font-style: italic;
   }
   .empty-kitchen .big { font-size: 48px; margin-bottom: 12px; }
@@ -439,7 +450,7 @@
   .modal {
     display: none;
     position: fixed; inset: 0;
-    background: rgba(0,0,0,.8);
+    background: rgba(40,30,20,.55);
     z-index: 100;
     align-items: center;
     justify-content: center;
@@ -448,46 +459,50 @@
   }
   .modal.open { display: flex; }
   .modal-content {
-    background: #1a1a1a;
-    border: 1px solid rgba(255,255,255,.15);
+    background: #fffaf0;
+    border: 1px solid rgba(0,0,0,.1);
     border-radius: 16px;
     max-width: 600px;
     width: 100%;
     max-height: 90vh;
     overflow-y: auto;
     padding: 28px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.2);
+    color: #2a2520;
   }
   .modal-content h2 {
     font-family: 'Playfair Display', serif;
     font-size: 28px;
     margin-bottom: 20px;
+    color: #2a2520;
   }
   .modal-content label {
     display: block;
     font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 2px;
-    color: #888;
+    color: #8a7a65;
     margin: 16px 0 6px;
     font-weight: 700;
   }
   .modal-content input, .modal-content textarea {
     width: 100%;
     padding: 10px 12px;
-    background: rgba(255,255,255,.05);
-    border: 1px solid rgba(255,255,255,.15);
+    background: #fff;
+    border: 1px solid rgba(0,0,0,.15);
     border-radius: 8px;
-    color: #fff;
+    color: #2a2520;
     font-size: 15px;
   }
   .modal-content input:focus, .modal-content textarea:focus {
     outline: none;
-    border-color: #f4d03f;
+    border-color: #e67e22;
+    box-shadow: 0 0 0 3px rgba(230,126,34,.15);
   }
   .menu-edit-section {
     margin-top: 20px;
     padding-top: 16px;
-    border-top: 1px solid rgba(255,255,255,.1);
+    border-top: 1px solid rgba(0,0,0,.1);
   }
   .menu-edit-row {
     display: flex;
@@ -501,7 +516,7 @@
     gap: 10px;
     margin-top: 24px;
     padding-top: 16px;
-    border-top: 1px solid rgba(255,255,255,.1);
+    border-top: 1px solid rgba(0,0,0,.1);
   }
   .btn-primary {
     flex: 1;
@@ -516,7 +531,8 @@
   }
   .btn-secondary {
     padding: 12px 18px;
-    background: rgba(255,255,255,.08);
+    background: rgba(0,0,0,.06);
+    color: #2a2520;
     border-radius: 8px;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -524,16 +540,16 @@
   }
   .btn-danger {
     padding: 8px 14px;
-    background: rgba(231,76,60,.2);
-    color: #e74c3c;
+    background: rgba(231,76,60,.15);
+    color: #c0392b;
     border-radius: 6px;
     font-size: 12px;
   }
 
   .firebase-status {
-    background: rgba(243,156,18,.1);
-    border: 1px solid rgba(243,156,18,.3);
-    color: #f39c12;
+    background: rgba(243,156,18,.12);
+    border: 1px solid rgba(243,156,18,.4);
+    color: #b8730a;
     padding: 12px;
     border-radius: 8px;
     font-size: 13px;
@@ -541,12 +557,12 @@
     margin-top: 12px;
   }
   .firebase-status.ok {
-    background: rgba(46,204,113,.1);
-    border-color: rgba(46,204,113,.3);
-    color: #2ecc71;
+    background: rgba(46,204,113,.12);
+    border-color: rgba(46,204,113,.4);
+    color: #1e7e3e;
   }
   .firebase-status code {
-    background: rgba(0,0,0,.3);
+    background: rgba(0,0,0,.08);
     padding: 1px 5px;
     border-radius: 3px;
     font-size: 12px;
@@ -691,7 +707,7 @@ const DEFAULT_DATA = {
     japanese: {
       name: 'Sakura',
       tag: '寿司と禅',
-      icon: '🍣',
+      icon: '🍜',
       menu: {
         'Hovedretter': ['Sushi-tallerken', 'Ramen Tonkotsu'],
         'Dessert':     ['Mochi-is'],
@@ -1018,7 +1034,7 @@ function renderSentOrders() {
   const wrap = document.getElementById('sent-orders');
   const list = (orders[currentRestaurant] || []).filter(o => o.table === currentTable);
   if (list.length === 0) { wrap.innerHTML = ''; return; }
-  let html = `<h3 style="margin: 24px 0 12px; font-family: 'Playfair Display', serif; font-size: 20px;">Sendte bestillinger</h3>`;
+  let html = `<h3 style="margin: 24px 0 12px; font-family: 'Playfair Display', serif; font-size: 20px; color: #2a2520;">Sendte bestillinger</h3>`;
   for (const o of list) {
     const t = new Date(o.createdAt);
     const time = `${pad(t.getHours())}:${pad(t.getMinutes())}`;
@@ -1114,7 +1130,7 @@ function renderSettings() {
     const r = data.restaurants[key];
     html += `
       <div class="menu-edit-section">
-        <h3 style="font-family:'Playfair Display',serif; font-size:22px; margin-bottom:8px;">${r.icon} ${capitalize(key)}</h3>
+        <h3 style="font-family:'Playfair Display',serif; font-size:22px; margin-bottom:8px; color:#2a2520;">${r.icon} ${capitalize(key)}</h3>
 
         <label>Restaurantnavn</label>
         <input type="text" id="cfg-name-${key}" value="${escapeAttr(r.name)}">
