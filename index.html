@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Restaurantbestilling</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Bebas+Neue&family=Noto+Serif+JP:wght@400;700;900&family=Lora:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,700;1,400&family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow-x: hidden; }
+  body {
+    font-family: 'Lora', serif;
+    background: #1a1a1a;
+    color: #fff;
+    min-height: 100vh;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+  input, textarea, select { font-family: inherit; }
+
+  /* ============ SPLASH ============ */
+  #splash {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(135deg, #2a1a0a 0%, #1a1a1a 50%, #0a1a1a 100%);
+    position: relative;
+  }
+  #splash::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: radial-gradient(circle at 20% 30%, rgba(255,200,100,.08), transparent 40%),
+                      radial-gradient(circle at 80% 70%, rgba(255,100,100,.08), transparent 40%);
+    pointer-events: none;
+  }
+  .splash-header {
+    text-align: center;
+    padding: 50px 20px 30px;
+    position: relative;
+    z-index: 1;
+  }
+  .splash-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(38px, 6vw, 64px);
+    font-weight: 900;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, #f4d03f, #e67e22, #c0392b);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .splash-sub {
+    font-style: italic;
+    color: #aaa;
+    margin-top: 8px;
+    font-size: 18px;
+  }
+  .restaurant-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    padding: 20px 40px 60px;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+    position: relative;
+    z-index: 1;
+  }
+  .rest-card {
+    aspect-ratio: 3/4;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    transition: transform .3s ease, box-shadow .3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 30px;
+    border: 2px solid rgba(255,255,255,.1);
+  }
+  .rest-card:hover { transform: translateY(-6px); box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+  .rest-card.mexican {
+    background: linear-gradient(180deg, #c0392b 0%, #e67e22 50%, #f39c12 100%);
+  }
+  .rest-card.japanese {
+    background: linear-gradient(180deg, #2c3e50 0%, #1a1a1a 60%, #c0392b 100%);
+  }
+  .rest-card.italian {
+    background: linear-gradient(180deg, #1e6e3e 0%, #f4ecd8 50%, #c0392b 100%);
+  }
+  .rest-card .icon {
+    font-size: 80px;
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    opacity: .8;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,.3));
+  }
+  .rest-card .pattern {
+    position: absolute;
+    inset: 0;
+    opacity: .15;
+    pointer-events: none;
+  }
+  .rest-card .name {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 2px 12px rgba(0,0,0,.4);
+    margin-bottom: 8px;
+    line-height: 1.1;
+  }
+  .rest-card.italian .name { color: #1a1a1a; text-shadow: 0 2px 8px rgba(255,255,255,.3); }
+  .rest-card .tag {
+    color: rgba(255,255,255,.85);
+    font-style: italic;
+    font-size: 16px;
+  }
+  .rest-card.italian .tag { color: rgba(0,0,0,.7); }
+  .rest-card.japanese .name { font-family: 'Noto Serif JP', serif; }
+
+  .role-pick {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+    position: relative;
+    z-index: 2;
+  }
+  .role-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    background: rgba(255,255,255,.95);
+    color: #1a1a1a;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 13px;
+    letter-spacing: 1px;
+    transition: background .2s;
+  }
+  .role-btn:hover { background: #fff; }
+
+  .splash-footer {
+    text-align: center;
+    padding: 20px;
+    color: #555;
+    font-size: 13px;
+    position: relative;
+    z-index: 1;
+  }
+  .splash-footer button {
+    color: #888;
+    text-decoration: underline;
+    font-size: 13px;
+  }
+
+  /* ============ APP (servitør/kjøkken) ============ */
+  #app { display: none; min-height: 100vh; flex-direction: column; }
+  .app-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: #0d0d0d;
+    border-bottom: 2px solid rgba(255,255,255,.08);
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .app-bar .left { display: flex; align-items: center; gap: 14px; }
+  .app-bar .rest-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+  }
+  .app-bar .role {
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 2px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    background: rgba(255,255,255,.1);
+  }
+  .icon-btn {
+    width: 38px; height: 38px;
+    border-radius: 8px;
+    background: rgba(255,255,255,.08);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    transition: background .2s;
+  }
+  .icon-btn:hover { background: rgba(255,255,255,.15); }
+  .conn-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #888;
+    box-shadow: 0 0 8px currentColor;
+  }
+  .conn-dot.online { background: #2ecc71; color: #2ecc71; }
+  .conn-dot.local { background: #f39c12; color: #f39c12; }
+
+  /* ============ TABLES (servitør hovedvisning) ============ */
+  #waiter-home { padding: 24px; }
+  .tables-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 16px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .table-card {
+    aspect-ratio: 1;
+    border-radius: 14px;
+    background: rgba(255,255,255,.04);
+    border: 2px solid rgba(255,255,255,.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all .2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .table-card:hover { transform: scale(1.03); border-color: rgba(255,255,255,.3); }
+  .table-card.has-orders {
+    background: linear-gradient(135deg, rgba(46,204,113,.15), rgba(46,204,113,.05));
+    border-color: rgba(46,204,113,.5);
+  }
+  .table-card.all-served {
+    background: linear-gradient(135deg, rgba(155,89,182,.15), rgba(155,89,182,.05));
+    border-color: rgba(155,89,182,.5);
+  }
+  .table-num { font-family: 'Playfair Display', serif; font-size: 42px; font-weight: 900; }
+  .table-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 2px; }
+  .table-badge {
+    position: absolute;
+    top: 8px; right: 8px;
+    background: #e67e22;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ============ ORDER VIEW ============ */
+  #order-view { padding: 24px; max-width: 900px; margin: 0 auto; width: 100%; }
+  .back-btn {
+    margin-bottom: 16px;
+    color: #aaa;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .back-btn:hover { color: #fff; }
+  .order-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255,255,255,.1);
+  }
+  .order-head h2 { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 900; }
+  .menu-section { margin-bottom: 24px; }
+  .menu-section h3 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: #888;
+    margin-bottom: 12px;
+    font-weight: 700;
+  }
+  .menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    gap: 12px;
+  }
+  .menu-item .name { font-size: 17px; flex: 1; }
+  .qty-ctrl {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0,0,0,.4);
+    border-radius: 8px;
+    padding: 4px;
+  }
+  .qty-ctrl button {
+    width: 32px; height: 32px;
+    border-radius: 6px;
+    background: rgba(255,255,255,.08);
+    font-size: 18px;
+    font-weight: 700;
+    transition: background .15s;
+  }
+  .qty-ctrl button:hover { background: rgba(255,255,255,.15); }
+  .qty-ctrl button:active { transform: scale(.95); }
+  .qty-ctrl .qty { min-width: 24px; text-align: center; font-weight: 700; }
+
+  .send-bar {
+    position: sticky;
+    bottom: 0;
+    margin: 24px -24px 0;
+    padding: 16px 24px;
+    background: linear-gradient(180deg, transparent, #1a1a1a 30%);
+  }
+  .send-btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    font-weight: 700;
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: transform .15s, box-shadow .2s;
+  }
+  .send-btn:hover { box-shadow: 0 8px 24px rgba(46,204,113,.3); }
+  .send-btn:active { transform: scale(.98); }
+  .send-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+  /* sent orders list inside table view */
+  .sent-orders { margin-top: 24px; }
+  .sent-order {
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .sent-order .meta {
+    font-size: 11px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .sent-order ul { list-style: none; }
+  .sent-order li {
+    padding: 4px 0;
+    display: flex;
+    justify-content: space-between;
+  }
+  .sent-order li.served { color: #888; text-decoration: line-through; }
+  .sent-order .served-tag { color: #2ecc71; font-size: 12px; }
+
+  /* ============ KITCHEN VIEW ============ */
+  #kitchen-view { padding: 24px; }
+  .kitchen-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .ticket {
+    background: linear-gradient(180deg, #fffef7, #f5f3e8);
+    color: #2a2a2a;
+    border-radius: 4px;
+    padding: 18px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.4);
+    font-family: 'Lora', serif;
+    position: relative;
+    border-top: 6px solid #c0392b;
+  }
+  .ticket.all-done { opacity: .6; border-top-color: #2ecc71; }
+  .ticket-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 2px dashed #ccc;
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+  }
+  .ticket-table { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; }
+  .ticket-time { font-size: 13px; color: #777; font-variant-numeric: tabular-nums; }
+  .ticket ul { list-style: none; }
+  .ticket li {
+    padding: 10px 8px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: background .15s;
+    user-select: none;
+  }
+  .ticket li:hover { background: rgba(0,0,0,.03); }
+  .ticket li:last-child { border-bottom: none; }
+  .ticket li .check {
+    width: 22px; height: 22px;
+    border: 2px solid #999;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .ticket li.served .check {
+    background: #2ecc71;
+    border-color: #2ecc71;
+    color: #fff;
+  }
+  .ticket li.served { color: #999; text-decoration: line-through; }
+  .ticket li .qty-pill {
+    background: #2c3e50;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-right: 6px;
+  }
+  .ticket li.served .qty-pill { background: #999; }
+  .ticket-name { flex: 1; }
+  .empty-kitchen {
+    text-align: center;
+    padding: 80px 20px;
+    color: #666;
+    font-style: italic;
+  }
+  .empty-kitchen .big { font-size: 48px; margin-bottom: 12px; }
+
+  /* ============ SETTINGS MODAL ============ */
+  .modal {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.8);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(6px);
+  }
+  .modal.open { display: flex; }
+  .modal-content {
+    background: #1a1a1a;
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 16px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 28px;
+  }
+  .modal-content h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    margin-bottom: 20px;
+  }
+  .modal-content label {
+    display: block;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #888;
+    margin: 16px 0 6px;
+    font-weight: 700;
+  }
+  .modal-content input, .modal-content textarea {
+    width: 100%;
+    padding: 10px 12px;
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 15px;
+  }
+  .modal-content input:focus, .modal-content textarea:focus {
+    outline: none;
+    border-color: #f4d03f;
+  }
+  .menu-edit-section {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,.1);
+  }
+  .menu-edit-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 6px;
+    align-items: center;
+  }
+  .menu-edit-row input { flex: 1; }
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,.1);
+  }
+  .btn-primary {
+    flex: 1;
+    padding: 12px;
+    background: linear-gradient(135deg, #f4d03f, #e67e22);
+    color: #1a1a1a;
+    font-weight: 700;
+    border-radius: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 13px;
+  }
+  .btn-secondary {
+    padding: 12px 18px;
+    background: rgba(255,255,255,.08);
+    border-radius: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 13px;
+  }
+  .btn-danger {
+    padding: 8px 14px;
+    background: rgba(231,76,60,.2);
+    color: #e74c3c;
+    border-radius: 6px;
+    font-size: 12px;
+  }
+
+  .firebase-status {
+    background: rgba(243,156,18,.1);
+    border: 1px solid rgba(243,156,18,.3);
+    color: #f39c12;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.5;
+    margin-top: 12px;
+  }
+  .firebase-status.ok {
+    background: rgba(46,204,113,.1);
+    border-color: rgba(46,204,113,.3);
+    color: #2ecc71;
+  }
+  .firebase-status code {
+    background: rgba(0,0,0,.3);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 12px;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #2ecc71;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-weight: 700;
+    box-shadow: 0 8px 24px rgba(0,0,0,.4);
+    transition: transform .3s ease;
+    z-index: 200;
+    pointer-events: none;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 600px) {
+    .splash-title { font-size: 38px; }
+    .restaurant-grid { padding: 16px; gap: 16px; }
+    .rest-card { aspect-ratio: 16/10; padding: 22px; }
+    .rest-card .icon { font-size: 56px; top: 18px; right: 18px; }
+    .rest-card .name { font-size: 28px; }
+    .tables-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; }
+    .table-num { font-size: 34px; }
+    #order-view, #kitchen-view, #waiter-home { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- =============== SPLASH =============== -->
+<div id="splash">
+  <div class="splash-header">
+    <div class="splash-title">Bestillingssystem</div>
+    <div class="splash-sub">Velg restaurant og rolle</div>
+  </div>
+  <div class="restaurant-grid" id="restaurant-grid"></div>
+  <div class="splash-footer">
+    <button onclick="openSettings()">⚙ Innstillinger (rediger menyer & navn)</button>
+    <span style="margin: 0 10px; color: #333;">|</span>
+    <span id="conn-status">📦 Lokal modus</span>
+  </div>
+</div>
+
+<!-- =============== APP =============== -->
+<div id="app">
+  <div class="app-bar">
+    <div class="left">
+      <button class="icon-btn" onclick="goSplash()" title="Tilbake">←</button>
+      <div>
+        <div class="rest-name" id="bar-rest-name"></div>
+        <div style="display:flex; gap:8px; align-items:center; margin-top: 2px;">
+          <span class="role" id="bar-role"></span>
+          <span class="conn-dot" id="conn-dot" title=""></span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <button class="icon-btn" onclick="openSettings()" title="Innstillinger">⚙</button>
+    </div>
+  </div>
+
+  <!-- Servitør: liste over bord -->
+  <div id="waiter-home" style="display:none;">
+    <div class="tables-grid" id="tables-grid"></div>
+  </div>
+
+  <!-- Servitør: enkelt bord -->
+  <div id="order-view" style="display:none;">
+    <button class="back-btn" onclick="showWaiterHome()">← Alle bord</button>
+    <div class="order-head">
+      <h2 id="order-table-title">Bord</h2>
+    </div>
+
+    <div id="menu-render"></div>
+
+    <div class="send-bar">
+      <button class="send-btn" id="send-btn" onclick="sendOrder()">Send bestilling til kjøkken</button>
+    </div>
+
+    <div class="sent-orders" id="sent-orders"></div>
+  </div>
+
+  <!-- Kjøkken -->
+  <div id="kitchen-view" style="display:none;">
+    <div class="kitchen-grid" id="kitchen-grid"></div>
+  </div>
+</div>
+
+<!-- =============== SETTINGS MODAL =============== -->
+<div class="modal" id="settings-modal">
+  <div class="modal-content">
+    <h2>Innstillinger</h2>
+
+    <div id="restaurant-editors"></div>
+
+    <div class="menu-edit-section">
+      <label>Firebase-konfigurasjon (valgfri – for synk mellom enheter)</label>
+      <textarea id="fb-config" rows="8" placeholder='Lim inn Firebase config-objekt her, f.eks.:
+{
+  "apiKey": "AIza...",
+  "authDomain": "ditt-prosjekt.firebaseapp.com",
+  "databaseURL": "https://ditt-prosjekt-default-rtdb.europe-west1.firebasedatabase.app",
+  "projectId": "ditt-prosjekt"
+}'></textarea>
+      <div class="firebase-status" id="fb-status">
+        <strong>📦 Lokal modus aktiv.</strong> Bestillinger lagres bare på denne enheten. For å synkronisere mellom servitør og kjøkken: opprett et gratis Firebase-prosjekt, aktiver Realtime Database, og lim inn config-objektet over. Se <code>README.md</code> for steg-for-steg.
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeSettings()">Avbryt</button>
+      <button class="btn-primary" onclick="saveSettings()">Lagre</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+// =====================================================================
+//  STANDARDDATA – kan redigeres av lærer/elev via innstillinger
+// =====================================================================
+const DEFAULT_DATA = {
+  restaurants: {
+    mexican: {
+      name: 'El Sombrero',
+      tag: 'Auténtico Mexicano',
+      icon: '🌶️',
+      menu: {
+        'Hovedretter': ['Tacos al Pastor', 'Enchiladas Verdes'],
+        'Dessert':     ['Churros med sjokolade'],
+        'Drikke':      ['Horchata', 'Limonada']
+      }
+    },
+    japanese: {
+      name: 'Sakura',
+      tag: '寿司と禅',
+      icon: '🍣',
+      menu: {
+        'Hovedretter': ['Sushi-tallerken', 'Ramen Tonkotsu'],
+        'Dessert':     ['Mochi-is'],
+        'Drikke':      ['Grønn te', 'Ramune']
+      }
+    },
+    italian: {
+      name: 'La Trattoria',
+      tag: 'Cucina della nonna',
+      icon: '🍝',
+      menu: {
+        'Hovedretter': ['Spaghetti Carbonara', 'Pizza Margherita'],
+        'Dessert':     ['Tiramisù'],
+        'Drikke':      ['San Pellegrino', 'Italiensk lemonade']
+      }
+    }
+  },
+  tables: 14
+};
+
+// =====================================================================
+//  TILSTAND
+// =====================================================================
+let data = loadData();
+let currentRestaurant = null;
+let currentRole = null;          // 'waiter' eller 'kitchen'
+let currentTable = null;
+let cart = {};                    // { 'Hovedretter:Tacos': 2, ... }
+
+// Bestillinger lagres slik:
+// orders[restaurantKey] = [ { id, table, items: [{name,section,qty,served}], createdAt } ]
+let orders = loadOrders();
+
+// =====================================================================
+//  LAGRING (localStorage + valgfri Firebase)
+// =====================================================================
+function loadData() {
+  try {
+    const saved = localStorage.getItem('rest_data');
+    if (saved) return JSON.parse(saved);
+  } catch (e) {}
+  return JSON.parse(JSON.stringify(DEFAULT_DATA));
+}
+function saveData() {
+  localStorage.setItem('rest_data', JSON.stringify(data));
+}
+function loadOrders() {
+  try {
+    const saved = localStorage.getItem('rest_orders');
+    if (saved) return JSON.parse(saved);
+  } catch (e) {}
+  return { mexican: [], japanese: [], italian: [] };
+}
+function saveOrdersLocal() {
+  localStorage.setItem('rest_orders', JSON.stringify(orders));
+}
+
+// ---------- Firebase (valgfri) ----------
+let fbApp = null, fbDb = null, fbReady = false, fbUnsub = null;
+let fbConfig = null;
+try {
+  const c = localStorage.getItem('fb_config');
+  if (c) fbConfig = JSON.parse(c);
+} catch(e) {}
+
+async function initFirebase() {
+  if (!fbConfig || !fbConfig.databaseURL) return;
+  try {
+    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js');
+    const dbMod = await import('https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js');
+    fbApp = initializeApp(fbConfig);
+    fbDb = dbMod.getDatabase(fbApp);
+    fbReady = true;
+    window._fbDb = fbDb;
+    window._fbMod = dbMod;
+    setConnStatus('online', '🟢 Synk på (Firebase)');
+    listenFirebaseOrders();
+  } catch (err) {
+    console.error('Firebase init feilet:', err);
+    setConnStatus('local', '📦 Lokal modus (Firebase-feil)');
+  }
+}
+
+function listenFirebaseOrders() {
+  if (!fbReady) return;
+  const { ref, onValue } = window._fbMod;
+  if (fbUnsub) fbUnsub();
+  const ordersRef = ref(fbDb, 'orders');
+  fbUnsub = onValue(ordersRef, (snap) => {
+    const val = snap.val() || {};
+    orders = {
+      mexican:  Object.values(val.mexican  || {}).sort((a,b)=>a.createdAt-b.createdAt),
+      japanese: Object.values(val.japanese || {}).sort((a,b)=>a.createdAt-b.createdAt),
+      italian:  Object.values(val.italian  || {}).sort((a,b)=>a.createdAt-b.createdAt)
+    };
+    saveOrdersLocal();
+    rerenderActiveView();
+  });
+}
+
+async function fbWriteOrder(restKey, order) {
+  if (!fbReady) return false;
+  const { ref, set } = window._fbMod;
+  await set(ref(fbDb, `orders/${restKey}/${order.id}`), order);
+  return true;
+}
+async function fbUpdateOrder(restKey, order) {
+  if (!fbReady) return false;
+  const { ref, set } = window._fbMod;
+  await set(ref(fbDb, `orders/${restKey}/${order.id}`), order);
+  return true;
+}
+
+function setConnStatus(state, text) {
+  const dot = document.getElementById('conn-dot');
+  if (dot) {
+    dot.classList.remove('online','local');
+    dot.classList.add(state);
+    dot.title = text;
+  }
+  const cs = document.getElementById('conn-status');
+  if (cs) cs.textContent = text;
+}
+
+// =====================================================================
+//  SPLASH-RENDERING
+// =====================================================================
+function renderSplash() {
+  const grid = document.getElementById('restaurant-grid');
+  const keys = ['mexican','japanese','italian'];
+  grid.innerHTML = keys.map(key => {
+    const r = data.restaurants[key];
+    return `
+      <div class="rest-card ${key}">
+        <div class="icon">${r.icon}</div>
+        <div class="pattern">${patternFor(key)}</div>
+        <div class="name">${escapeHtml(r.name)}</div>
+        <div class="tag">${escapeHtml(r.tag)}</div>
+        <div class="role-pick">
+          <button class="role-btn" onclick="enter('${key}','waiter')">Servitør</button>
+          <button class="role-btn" onclick="enter('${key}','kitchen')">Kjøkken</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function patternFor(key) {
+  // dekorativ SVG-bakgrunn per kjøkken
+  if (key === 'mexican') return `<svg width="100%" height="100%"><defs><pattern id="pm" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M0,20 L20,0 L40,20 L20,40 Z" stroke="white" stroke-width="1" fill="none"/></pattern></defs><rect width="100%" height="100%" fill="url(#pm)"/></svg>`;
+  if (key === 'japanese') return `<svg width="100%" height="100%"><defs><pattern id="pj" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse"><circle cx="30" cy="30" r="20" stroke="white" stroke-width="1" fill="none"/></pattern></defs><rect width="100%" height="100%" fill="url(#pj)"/></svg>`;
+  return `<svg width="100%" height="100%"><defs><pattern id="pi" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M15,0 L15,30 M0,15 L30,15" stroke="black" stroke-width=".5"/></pattern></defs><rect width="100%" height="100%" fill="url(#pi)"/></svg>`;
+}
+
+// =====================================================================
+//  NAVIGASJON
+// =====================================================================
+window.enter = function(restKey, role) {
+  currentRestaurant = restKey;
+  currentRole = role;
+  document.getElementById('splash').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  const r = data.restaurants[restKey];
+  document.getElementById('bar-rest-name').textContent = r.name;
+  document.getElementById('bar-role').textContent = role === 'waiter' ? 'Servitør' : 'Kjøkken';
+
+  // sett tilkoblingsstatus
+  if (fbReady) setConnStatus('online','Synk på');
+  else setConnStatus('local','Lokal modus');
+
+  if (role === 'waiter') showWaiterHome();
+  else showKitchen();
+};
+
+window.goSplash = function() {
+  currentRestaurant = null;
+  currentRole = null;
+  currentTable = null;
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('splash').style.display = 'flex';
+  // stopp evt. kjøkken-clock
+  if (kitchenInterval) { clearInterval(kitchenInterval); kitchenInterval = null; }
+};
+
+window.showWaiterHome = function() {
+  document.getElementById('waiter-home').style.display = 'block';
+  document.getElementById('order-view').style.display = 'none';
+  document.getElementById('kitchen-view').style.display = 'none';
+  renderTables();
+};
+
+function showOrderView(tableNum) {
+  currentTable = tableNum;
+  cart = {};
+  document.getElementById('waiter-home').style.display = 'none';
+  document.getElementById('order-view').style.display = 'block';
+  document.getElementById('kitchen-view').style.display = 'none';
+  document.getElementById('order-table-title').textContent = `Bord ${tableNum}`;
+  renderMenu();
+  renderSentOrders();
+}
+
+function showKitchen() {
+  document.getElementById('waiter-home').style.display = 'none';
+  document.getElementById('order-view').style.display = 'none';
+  document.getElementById('kitchen-view').style.display = 'block';
+  renderKitchen();
+  if (!kitchenInterval) {
+    kitchenInterval = setInterval(renderKitchen, 1000); // oppdater klokke
+  }
+}
+
+function rerenderActiveView() {
+  if (!currentRestaurant) return;
+  if (currentRole === 'waiter') {
+    if (document.getElementById('order-view').style.display === 'block') {
+      renderSentOrders();
+    } else {
+      renderTables();
+    }
+  } else {
+    renderKitchen();
+  }
+}
+
+// =====================================================================
+//  SERVITØR – BORDOVERSIKT
+// =====================================================================
+function renderTables() {
+  const grid = document.getElementById('tables-grid');
+  const restOrders = orders[currentRestaurant] || [];
+  let html = '';
+  for (let i = 1; i <= data.tables; i++) {
+    const tableOrders = restOrders.filter(o => o.table === i);
+    const totalItems = tableOrders.reduce((s,o) => s + o.items.reduce((a,it)=>a+it.qty,0), 0);
+    const allServed = tableOrders.length > 0 && tableOrders.every(o => o.items.every(it => it.served));
+    const cls = totalItems === 0 ? '' : (allServed ? 'all-served' : 'has-orders');
+    const badge = totalItems > 0 ? `<div class="table-badge">${totalItems}</div>` : '';
+    html += `
+      <div class="table-card ${cls}" onclick="window._showOrderView(${i})">
+        ${badge}
+        <div class="table-num">${i}</div>
+        <div class="table-label">Bord</div>
+      </div>`;
+  }
+  grid.innerHTML = html;
+}
+window._showOrderView = showOrderView;
+
+// =====================================================================
+//  SERVITØR – BESTILLINGSVISNING
+// =====================================================================
+function renderMenu() {
+  const wrap = document.getElementById('menu-render');
+  const menu = data.restaurants[currentRestaurant].menu;
+  let html = '';
+  for (const section of Object.keys(menu)) {
+    html += `<div class="menu-section"><h3>${escapeHtml(section)}</h3>`;
+    for (const item of menu[section]) {
+      const key = `${section}::${item}`;
+      const qty = cart[key] || 0;
+      html += `
+        <div class="menu-item">
+          <div class="name">${escapeHtml(item)}</div>
+          <div class="qty-ctrl">
+            <button onclick="window._decQty('${escapeJs(key)}')">−</button>
+            <span class="qty" id="qty-${cssId(key)}">${qty}</span>
+            <button onclick="window._incQty('${escapeJs(key)}')">+</button>
+          </div>
+        </div>`;
+    }
+    html += `</div>`;
+  }
+  wrap.innerHTML = html;
+  updateSendBtn();
+}
+
+window._incQty = function(key) {
+  cart[key] = (cart[key] || 0) + 1;
+  document.getElementById(`qty-${cssId(key)}`).textContent = cart[key];
+  updateSendBtn();
+};
+window._decQty = function(key) {
+  cart[key] = Math.max(0, (cart[key] || 0) - 1);
+  document.getElementById(`qty-${cssId(key)}`).textContent = cart[key];
+  if (cart[key] === 0) delete cart[key];
+  updateSendBtn();
+};
+
+function updateSendBtn() {
+  const btn = document.getElementById('send-btn');
+  const total = Object.values(cart).reduce((a,b)=>a+b, 0);
+  btn.disabled = total === 0;
+  btn.textContent = total === 0
+    ? 'Velg minst én rett'
+    : `Send ${total} ${total === 1 ? 'rett' : 'retter'} til kjøkken`;
+}
+
+window.sendOrder = async function() {
+  if (Object.keys(cart).length === 0) return;
+  const items = Object.entries(cart).map(([key, qty]) => {
+    const [section, name] = key.split('::');
+    return { section, name, qty, served: false };
+  });
+  const order = {
+    id: 'o_' + Date.now() + '_' + Math.random().toString(36).slice(2,7),
+    table: currentTable,
+    items,
+    createdAt: Date.now()
+  };
+  if (fbReady) {
+    await fbWriteOrder(currentRestaurant, order);
+  } else {
+    orders[currentRestaurant].push(order);
+    saveOrdersLocal();
+  }
+  cart = {};
+  renderMenu();
+  renderSentOrders();
+  toast('Bestilling sendt!');
+};
+
+function renderSentOrders() {
+  const wrap = document.getElementById('sent-orders');
+  const list = (orders[currentRestaurant] || []).filter(o => o.table === currentTable);
+  if (list.length === 0) { wrap.innerHTML = ''; return; }
+  let html = `<h3 style="margin: 24px 0 12px; font-family: 'Playfair Display', serif; font-size: 20px;">Sendte bestillinger</h3>`;
+  for (const o of list) {
+    const t = new Date(o.createdAt);
+    const time = `${pad(t.getHours())}:${pad(t.getMinutes())}`;
+    html += `
+      <div class="sent-order">
+        <div class="meta">
+          <span>${time}</span>
+          <span>${o.items.every(it => it.served) ? '<span class="served-tag">● Alt servert</span>' : 'Underveis'}</span>
+        </div>
+        <ul>
+          ${o.items.map(it => `
+            <li class="${it.served ? 'served' : ''}">
+              <span>${it.qty}× ${escapeHtml(it.name)}</span>
+              <span style="font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px;">${escapeHtml(it.section)}</span>
+            </li>`).join('')}
+        </ul>
+      </div>`;
+  }
+  wrap.innerHTML = html;
+}
+
+// =====================================================================
+//  KJØKKEN
+// =====================================================================
+let kitchenInterval = null;
+function renderKitchen() {
+  const grid = document.getElementById('kitchen-grid');
+  const list = (orders[currentRestaurant] || [])
+    .filter(o => !o.items.every(it => it.served)) // skjul ferdige
+    .sort((a,b) => a.createdAt - b.createdAt);
+
+  if (list.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-kitchen" style="grid-column: 1/-1;">
+        <div class="big">🍳</div>
+        <div>Ingen bestillinger akkurat nå.</div>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = list.map(o => {
+    const elapsed = Math.floor((Date.now() - o.createdAt) / 1000);
+    const mm = Math.floor(elapsed / 60);
+    const ss = elapsed % 60;
+    const allDone = o.items.every(it => it.served);
+    return `
+      <div class="ticket ${allDone ? 'all-done' : ''}">
+        <div class="ticket-head">
+          <div class="ticket-table">Bord ${o.table}</div>
+          <div class="ticket-time">${mm}:${pad(ss)}</div>
+        </div>
+        <ul>
+          ${o.items.map((it, idx) => `
+            <li class="${it.served ? 'served' : ''}" onclick="window._toggleServed('${o.id}', ${idx})">
+              <span class="check">${it.served ? '✓' : ''}</span>
+              <span class="qty-pill">${it.qty}×</span>
+              <span class="ticket-name">${escapeHtml(it.name)}</span>
+            </li>`).join('')}
+        </ul>
+      </div>`;
+  }).join('');
+}
+
+window._toggleServed = async function(orderId, itemIdx) {
+  const list = orders[currentRestaurant];
+  const order = list.find(o => o.id === orderId);
+  if (!order) return;
+  order.items[itemIdx].served = !order.items[itemIdx].served;
+  if (fbReady) {
+    await fbUpdateOrder(currentRestaurant, order);
+  } else {
+    saveOrdersLocal();
+  }
+  renderKitchen();
+};
+
+// =====================================================================
+//  INNSTILLINGER (rediger navn + meny + Firebase)
+// =====================================================================
+window.openSettings = function() {
+  renderSettings();
+  document.getElementById('settings-modal').classList.add('open');
+};
+window.closeSettings = function() {
+  document.getElementById('settings-modal').classList.remove('open');
+};
+
+function renderSettings() {
+  const wrap = document.getElementById('restaurant-editors');
+  const keys = ['mexican','japanese','italian'];
+  let html = '';
+  for (const key of keys) {
+    const r = data.restaurants[key];
+    html += `
+      <div class="menu-edit-section">
+        <h3 style="font-family:'Playfair Display',serif; font-size:22px; margin-bottom:8px;">${r.icon} ${capitalize(key)}</h3>
+
+        <label>Restaurantnavn</label>
+        <input type="text" id="cfg-name-${key}" value="${escapeAttr(r.name)}">
+
+        <label>Undertekst</label>
+        <input type="text" id="cfg-tag-${key}" value="${escapeAttr(r.tag)}">
+    `;
+    for (const section of Object.keys(r.menu)) {
+      html += `<label>${section}</label>`;
+      r.menu[section].forEach((item, idx) => {
+        html += `
+          <div class="menu-edit-row">
+            <input type="text" data-rest="${key}" data-section="${escapeAttr(section)}" data-idx="${idx}" value="${escapeAttr(item)}">
+          </div>`;
+      });
+    }
+    html += `</div>`;
+  }
+  wrap.innerHTML = html;
+
+  // Firebase-config
+  const fbBox = document.getElementById('fb-config');
+  fbBox.value = fbConfig ? JSON.stringify(fbConfig, null, 2) : '';
+  const status = document.getElementById('fb-status');
+  if (fbReady) {
+    status.classList.add('ok');
+    status.innerHTML = '<strong>🟢 Firebase tilkoblet.</strong> Bestillinger synkroniseres mellom alle enheter som har samme config.';
+  }
+}
+
+window.saveSettings = function() {
+  // Lagre tekstfelt
+  const keys = ['mexican','japanese','italian'];
+  for (const key of keys) {
+    const newName = document.getElementById(`cfg-name-${key}`).value.trim();
+    const newTag = document.getElementById(`cfg-tag-${key}`).value.trim();
+    if (newName) data.restaurants[key].name = newName;
+    if (newTag) data.restaurants[key].tag = newTag;
+  }
+  // Lagre menyer
+  document.querySelectorAll('input[data-rest]').forEach(inp => {
+    const k = inp.dataset.rest;
+    const s = inp.dataset.section;
+    const i = parseInt(inp.dataset.idx);
+    const v = inp.value.trim();
+    if (v) data.restaurants[k].menu[s][i] = v;
+  });
+  saveData();
+
+  // Firebase-config
+  const cfgText = document.getElementById('fb-config').value.trim();
+  let needReload = false;
+  if (cfgText === '') {
+    if (fbConfig) { localStorage.removeItem('fb_config'); needReload = true; }
+  } else {
+    try {
+      const parsed = JSON.parse(cfgText);
+      const oldStr = JSON.stringify(fbConfig || {});
+      if (JSON.stringify(parsed) !== oldStr) {
+        localStorage.setItem('fb_config', cfgText);
+        needReload = true;
+      }
+    } catch (e) {
+      alert('Firebase-config er ikke gyldig JSON. Sjekk at du har lim inn et objekt med klammeparenteser { ... }.');
+      return;
+    }
+  }
+
+  closeSettings();
+  renderSplash();
+  if (currentRestaurant) {
+    document.getElementById('bar-rest-name').textContent = data.restaurants[currentRestaurant].name;
+    if (currentRole === 'waiter' && currentTable) renderMenu();
+  }
+  toast('Innstillinger lagret');
+  if (needReload) {
+    setTimeout(() => location.reload(), 500);
+  }
+};
+
+// =====================================================================
+//  HJELPEFUNKSJONER
+// =====================================================================
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s) { return escapeHtml(s); }
+function escapeJs(s) { return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+function cssId(s) { return s.replace(/[^a-zA-Z0-9]/g,'_'); }
+function pad(n) { return String(n).padStart(2,'0'); }
+function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+let toastTimer = null;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+// =====================================================================
+//  OPPSTART
+// =====================================================================
+renderSplash();
+initFirebase();
+
+// vis splash uansett om vi reloader
+document.getElementById('splash').style.display = 'flex';
+document.getElementById('app').style.display = 'none';
+</script>
+</body>
+</html>
