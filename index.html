@@ -370,6 +370,62 @@
 
   /* ============ KITCHEN VIEW ============ */
   #kitchen-view { padding: 24px; }
+  .kitchen-tabs {
+    display: flex;
+    gap: 4px;
+    max-width: 1400px;
+    margin: 0 auto 20px;
+    background: rgba(0,0,0,.06);
+    padding: 4px;
+    border-radius: 12px;
+    width: fit-content;
+  }
+  .kitchen-tab {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #6b5a45;
+    transition: all .2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .kitchen-tab:hover { color: #2a2520; }
+  .kitchen-tab.active {
+    background: #fffaf0;
+    color: #2a2520;
+    box-shadow: 0 2px 6px rgba(0,0,0,.08);
+  }
+  .kitchen-tab .count {
+    background: rgba(0,0,0,.1);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    min-width: 22px;
+    text-align: center;
+  }
+  .kitchen-tab.active .count {
+    background: #e67e22;
+    color: #fff;
+  }
+  .ticket .reopen-btn {
+    margin-top: 10px;
+    width: 100%;
+    padding: 10px;
+    background: rgba(230,126,34,.15);
+    color: #b8730a;
+    border: 1px solid rgba(230,126,34,.4);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: background .2s;
+  }
+  .ticket .reopen-btn:hover { background: rgba(230,126,34,.25); }
   .kitchen-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -654,6 +710,14 @@
 
   <!-- Kjøkken -->
   <div id="kitchen-view" style="display:none;">
+    <div class="kitchen-tabs">
+      <button class="kitchen-tab active" id="tab-active" onclick="setKitchenTab('active')">
+        Aktive <span class="count" id="count-active">0</span>
+      </button>
+      <button class="kitchen-tab" id="tab-done" onclick="setKitchenTab('done')">
+        Ferdige <span class="count" id="count-done">0</span>
+      </button>
+    </div>
     <div class="kitchen-grid" id="kitchen-grid"></div>
   </div>
 </div>
@@ -1063,31 +1127,56 @@ function renderSentOrders() {
 //  KJØKKEN
 // =====================================================================
 let kitchenInterval = null;
+let kitchenTab = 'active'; // 'active' eller 'done'
+
+window.setKitchenTab = function(tab) {
+  kitchenTab = tab;
+  document.getElementById('tab-active').classList.toggle('active', tab === 'active');
+  document.getElementById('tab-done').classList.toggle('active', tab === 'done');
+  renderKitchen();
+};
+
 function renderKitchen() {
   const grid = document.getElementById('kitchen-grid');
-  const list = (orders[currentRestaurant] || [])
-    .filter(o => !o.items.every(it => it.served)) // skjul ferdige
-    .sort((a,b) => a.createdAt - b.createdAt);
+  const all = orders[currentRestaurant] || [];
+  const activeList = all.filter(o => !o.items.every(it => it.served));
+  const doneList   = all.filter(o =>  o.items.every(it => it.served));
+
+  // Oppdater telleboblene
+  document.getElementById('count-active').textContent = activeList.length;
+  document.getElementById('count-done').textContent = doneList.length;
+
+  const list = (kitchenTab === 'active' ? activeList : doneList)
+    .sort((a, b) => kitchenTab === 'active'
+      ? a.createdAt - b.createdAt    // eldste først (lenger ventetid øverst)
+      : b.createdAt - a.createdAt);  // nyeste ferdige øverst
 
   if (list.length === 0) {
     grid.innerHTML = `
       <div class="empty-kitchen" style="grid-column: 1/-1;">
-        <div class="big">🍳</div>
-        <div>Ingen bestillinger akkurat nå.</div>
+        <div class="big">${kitchenTab === 'active' ? '🍳' : '✅'}</div>
+        <div>${kitchenTab === 'active' ? 'Ingen aktive bestillinger akkurat nå.' : 'Ingen ferdige bestillinger ennå.'}</div>
       </div>`;
     return;
   }
 
   grid.innerHTML = list.map(o => {
-    const elapsed = Math.floor((Date.now() - o.createdAt) / 1000);
-    const mm = Math.floor(elapsed / 60);
-    const ss = elapsed % 60;
     const allDone = o.items.every(it => it.served);
+    let timeLabel;
+    if (allDone) {
+      const t = new Date(o.createdAt);
+      timeLabel = `Sendt ${pad(t.getHours())}:${pad(t.getMinutes())}`;
+    } else {
+      const elapsed = Math.floor((Date.now() - o.createdAt) / 1000);
+      const mm = Math.floor(elapsed / 60);
+      const ss = elapsed % 60;
+      timeLabel = `${mm}:${pad(ss)}`;
+    }
     return `
       <div class="ticket ${allDone ? 'all-done' : ''}">
         <div class="ticket-head">
           <div class="ticket-table">Bord ${o.table}</div>
-          <div class="ticket-time">${mm}:${pad(ss)}</div>
+          <div class="ticket-time">${timeLabel}</div>
         </div>
         <ul>
           ${o.items.map((it, idx) => `
@@ -1097,6 +1186,7 @@ function renderKitchen() {
               <span class="ticket-name">${escapeHtml(it.name)}</span>
             </li>`).join('')}
         </ul>
+        ${allDone ? `<button class="reopen-btn" onclick="window._reopenOrder('${o.id}')">↺ Hent fram igjen</button>` : ''}
       </div>`;
   }).join('');
 }
@@ -1112,6 +1202,22 @@ window._toggleServed = async function(orderId, itemIdx) {
     saveOrdersLocal();
   }
   renderKitchen();
+};
+
+window._reopenOrder = async function(orderId) {
+  const list = orders[currentRestaurant];
+  const order = list.find(o => o.id === orderId);
+  if (!order) return;
+  // Marker alle som ikke-servert igjen
+  order.items.forEach(it => it.served = false);
+  if (fbReady) {
+    await fbUpdateOrder(currentRestaurant, order);
+  } else {
+    saveOrdersLocal();
+  }
+  // Bytt tilbake til "Aktive"-fanen så kokken ser den med en gang
+  setKitchenTab('active');
+  toast('Bestillingen er aktiv igjen');
 };
 
 // =====================================================================
