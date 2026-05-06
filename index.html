@@ -770,7 +770,10 @@ let fbApp = null, fbDb = null, fbReady = false, fbUnsub = null;
 let fbConfig = null;
 try {
   const c = localStorage.getItem('fb_config');
-  if (c) fbConfig = JSON.parse(c);
+  if (c) {
+    // Bruker tolerant parser her også, i tilfelle gammel data ligger lagret i JS-format
+    fbConfig = parseFirebaseConfig(c);
+  }
 } catch(e) {}
 
 async function initFirebase() {
@@ -1186,16 +1189,15 @@ window.saveSettings = function() {
   if (cfgText === '') {
     if (fbConfig) { localStorage.removeItem('fb_config'); needReload = true; }
   } else {
-    try {
-      const parsed = JSON.parse(cfgText);
-      const oldStr = JSON.stringify(fbConfig || {});
-      if (JSON.stringify(parsed) !== oldStr) {
-        localStorage.setItem('fb_config', cfgText);
-        needReload = true;
-      }
-    } catch (e) {
-      alert('Firebase-config er ikke gyldig JSON. Sjekk at du har lim inn et objekt med klammeparenteser { ... }.');
+    const parsed = parseFirebaseConfig(cfgText);
+    if (!parsed) {
+      alert('Firebase-config kunne ikke leses. Lim inn alt mellom { og } fra Firebase-konsollen, inkludert klammeparentesene. Både JavaScript- og JSON-format godtas.');
       return;
+    }
+    const oldStr = JSON.stringify(fbConfig || {});
+    if (JSON.stringify(parsed) !== oldStr) {
+      localStorage.setItem('fb_config', JSON.stringify(parsed));
+      needReload = true;
     }
   }
 
@@ -1220,6 +1222,24 @@ function escapeJs(s) { return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"
 function cssId(s) { return s.replace(/[^a-zA-Z0-9]/g,'_'); }
 function pad(n) { return String(n).padStart(2,'0'); }
 function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+// Tolerant parser: godtar både ren JSON og JavaScript-objekt-syntaks fra Firebase-konsollen.
+function parseFirebaseConfig(text) {
+  let s = text.trim();
+  // Fjern evt. "const firebaseConfig =" eller "var x ="
+  s = s.replace(/^(const|let|var)\s+\w+\s*=\s*/, '');
+  // Fjern semikolon på slutten
+  s = s.replace(/;+\s*$/, '');
+  // Forsøk 1: rett JSON
+  try { return JSON.parse(s); } catch (e) {}
+  // Forsøk 2: JavaScript-objekt-syntaks (Firebase gir denne formen)
+  try {
+    // Bruker Function-konstruktør i stedet for eval (noe tryggere, og fungerer offline)
+    const obj = (new Function('return (' + s + ')'))();
+    if (obj && typeof obj === 'object') return obj;
+  } catch (e) {}
+  return null;
+}
 
 let toastTimer = null;
 function toast(msg) {
